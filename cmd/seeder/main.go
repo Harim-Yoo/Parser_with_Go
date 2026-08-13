@@ -8,9 +8,9 @@ import (
 	"os"
 	"parser/internal/database"
 	"path/filepath"
-	"sync"
 	"time"
 
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -18,14 +18,17 @@ type DataStruct database.InsertDataRow
 
 func main() {
 
+	godotenv.Load(".env")
+	dbURL := os.Getenv("DATABASE_URL")
+
 	files, err := os.ReadDir("./folder")
+
 	if err != nil {
 		log.Printf("Err1:%v\n", err)
 		return
 	}
-	var wg sync.WaitGroup
 
-	db, err := sql.Open("postgres", "postgres://postgres:reachwise@localhost:5432/fivehundred")
+	db, err := sql.Open("postgres", dbURL)
 
 	if err != nil {
 		log.Printf("Err2:%v\n", err)
@@ -35,32 +38,33 @@ func main() {
 	defer db.Close()
 	dbQueries := database.New(db)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	log.Printf("All connected\n")
 
 	var Results []database.InsertDataRow
 	for _, file := range files {
-		wg.Add(1)
-		go func(fileName string) {
-			defer wg.Done()
 
-			data, err := os.ReadFile(filepath.Join("./folder", fileName))
-			if err != nil {
-				log.Printf("Err:%v\n", err)
-			}
-			insData, err := dbQueries.InsertData(ctx, database.InsertDataParams{
-				Title:    fileName,
-				Contents: string(data),
-			})
-			if err != nil {
-				return
-			}
-			Results = append(Results, insData...)
-		}(file.Name())
+		fileName := file.Name()
+		data, err := os.ReadFile(filepath.Join("./folder", fileName))
+		if err != nil {
+			log.Printf("Err:%v\n", err)
+		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		insData, err := dbQueries.InsertData(ctx, database.InsertDataParams{
+			Title:    fileName,
+			Contents: string(data),
+		})
+		cancel()
+
+		if err != nil {
+			log.Printf("Err:%v\n", err)
+			return
+		}
+		Results = append(Results, insData...)
 	}
-	wg.Wait()
+
 	log.Println("All work is done.")
+
 	for _, result := range Results {
 		fmt.Printf("Title:%v\n", result.Title)
 	}

@@ -10,13 +10,12 @@ import (
 )
 
 const insertData = `-- name: InsertData :many
-INSERT INTO fivehundred_test (slug, title, contents)
-VALUES ($1, $2, $3)
+INSERT INTO fivehundred (title, contents)
+VALUES ($1, $2)
 RETURNING title, contents
 `
 
 type InsertDataParams struct {
-	Slug     string
 	Title    string
 	Contents string
 }
@@ -27,7 +26,7 @@ type InsertDataRow struct {
 }
 
 func (q *Queries) InsertData(ctx context.Context, arg InsertDataParams) ([]InsertDataRow, error) {
-	rows, err := q.db.QueryContext(ctx, insertData, arg.Slug, arg.Title, arg.Contents)
+	rows, err := q.db.QueryContext(ctx, insertData, arg.Title, arg.Contents)
 	if err != nil {
 		return nil, err
 	}

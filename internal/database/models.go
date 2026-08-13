@@ -6,11 +6,13 @@ package database
 
 import (
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
-type FivehundredTest struct {
-	ID        int64
-	Slug      string
+type Fivehundred struct {
+	ID        uuid.UUID
+	Class     sql.NullString
 	Title     string
 	Contents  string
 	CreatedAt sql.NullTime

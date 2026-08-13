@@ -1,7 +1,7 @@
 -- +goose Up
-CREATE TABLE fivehundred_test (
-  id bigint generated always as identity primary key,
-  slug varchar not null,
+CREATE TABLE public.fivehundred (
+  id uuid primary key default gen_random_uuid(),
+  class varchar,
   title text not null,
   contents text not null,
   created_at timestamptz default now(),
@@ -10,4 +10,4 @@ CREATE TABLE fivehundred_test (
 );
 
 -- +goose Down
-DROP TABLE fivehundred_test;
+DROP TABLE public.fivehundred;

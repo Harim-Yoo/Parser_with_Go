@@ -1,4 +1,4 @@
 -- name: InsertData :many
-INSERT INTO fivehundred_test (slug, title, contents)
-VALUES ($1, $2, $3)
+INSERT INTO fivehundred (title, contents)
+VALUES ($1, $2)
 RETURNING title, contents;
