@@ -9,7 +9,10 @@ import (
 )
 
 type Querier interface {
+	InsertBookData(ctx context.Context, arg InsertBookDataParams) error
 	InsertData(ctx context.Context, arg InsertDataParams) ([]InsertDataRow, error)
+	UpdateClass(ctx context.Context, arg UpdateClassParams) error
+	UpdateSlug(ctx context.Context, arg UpdateSlugParams) error
 }
 
 var _ Querier = (*Queries)(nil)

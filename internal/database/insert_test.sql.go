@@ -7,7 +7,40 @@ package database
 
 import (
 	"context"
+	"database/sql"
+
+	"github.com/lib/pq"
 )
+
+const insertBookData = `-- name: InsertBookData :exec
+INSERT INTO fivehundred (class, title, contents, slug, class_order)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (class, title)
+DO UPDATE SET
+  contents = EXCLUDED.contents,
+  slug = EXCLUDED.slug,
+  class_order = EXCLUDED.class_order,
+  updated_at = now()
+`
+
+type InsertBookDataParams struct {
+	Class      sql.NullString
+	Title      string
+	Contents   string
+	Slug       sql.NullString
+	ClassOrder sql.NullInt64
+}
+
+func (q *Queries) InsertBookData(ctx context.Context, arg InsertBookDataParams) error {
+	_, err := q.db.ExecContext(ctx, insertBookData,
+		arg.Class,
+		arg.Title,
+		arg.Contents,
+		arg.Slug,
+		arg.ClassOrder,
+	)
+	return err
+}
 
 const insertData = `-- name: InsertData :many
 INSERT INTO fivehundred (title, contents)
@@ -46,4 +79,38 @@ func (q *Queries) InsertData(ctx context.Context, arg InsertDataParams) ([]Inser
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateClass = `-- name: UpdateClass :exec
+UPDATE fivehundred
+SET class=$1,
+  updated_at=now()
+WHERE slug = ANY($2::text[])
+`
+
+type UpdateClassParams struct {
+	Class   sql.NullString
+	Column2 []string
+}
+
+func (q *Queries) UpdateClass(ctx context.Context, arg UpdateClassParams) error {
+	_, err := q.db.ExecContext(ctx, updateClass, arg.Class, pq.Array(arg.Column2))
+	return err
+}
+
+const updateSlug = `-- name: UpdateSlug :exec
+UPDATE fivehundred 
+SET slug=$1,
+  updated_at=now()
+WHERE title LIKE $2 || '%'
+`
+
+type UpdateSlugParams struct {
+	Slug    sql.NullString
+	Column2 sql.NullString
+}
+
+func (q *Queries) UpdateSlug(ctx context.Context, arg UpdateSlugParams) error {
+	_, err := q.db.ExecContext(ctx, updateSlug, arg.Slug, arg.Column2)
+	return err
 }

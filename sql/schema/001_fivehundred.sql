@@ -4,6 +4,8 @@ CREATE TABLE public.fivehundred (
   class varchar,
   title text not null,
   contents text not null,
+  class_order bigint,
+  slug text,
   created_at timestamptz default now(),
   updated_at timestamptz,
   is_deleted boolean default false

@@ -11,11 +11,13 @@ import (
 )
 
 type Fivehundred struct {
-	ID        uuid.UUID
-	Class     sql.NullString
-	Title     string
-	Contents  string
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
-	IsDeleted sql.NullBool
+	ID         uuid.UUID
+	Class      sql.NullString
+	Title      string
+	Contents   string
+	ClassOrder sql.NullInt64
+	Slug       sql.NullString
+	CreatedAt  sql.NullTime
+	UpdatedAt  sql.NullTime
+	IsDeleted  sql.NullBool
 }
